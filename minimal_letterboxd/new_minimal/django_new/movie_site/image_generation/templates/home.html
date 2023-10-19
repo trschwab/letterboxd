@@ -1,0 +1,26 @@
+<h1>
+    Home Page
+</h1>
+
+<p>
+    Enter your username for your Letterboxd Topster
+    <br><br>
+    Please read below for more details
+</p>
+
+<form action="/your-name.html" method="post">
+    {% csrf_token %}
+    <label for="receive_key">Your name: </label>
+    <input id="receive_key" type="text" name="receive_key-name" value="{{ current_name }}">
+    <input type="submit" value="OK">
+</form>
+
+<br><br><br>
+<p>
+    This site is a personal project.<br><br>
+    More work has been committed on furthering the efficiency and variability of this site<br>
+    But unfortunately it is not production ready.<br>
+    This is the most minimal I can envision for this site.<br>
+    So minimal, in fact, that it is not equipped to handle requests from multiple people.<br><br>
+    This will change, hopefully, in the near future.<br><br>
+</p>
