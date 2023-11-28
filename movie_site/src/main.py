@@ -12,15 +12,30 @@ BASE_URL = "https://letterboxd.com"
 def generate_topster(user):
     # Generate topster for user
 
-    user_df = get_user_diary_info(user)
+    if is_user_in_user_table(user):
+        # We only want to fetch new values to update our hydrate for a given user
+        # TODO
+        print("TODO")
+    else:
+        r = requests.post("http://127.0.0.1:8000/endpoint/user_table_post/", data={"name": user})
+        post_user_into(user)
+        # Let's get the data we just posted
 
-    c_names = ["month", "day", "film", "released", "rating", "like", "rewatch", "review", "edityou", "film_url"]  # , "img_url", "small_img_url"]
 
-    for i in range(len(c_names)):
-        user_df.rename(columns={ user_df.columns[i]: c_names[i] }, inplace=True)
+        # # We want to update our tables and ingest new data
+        # user_df = get_user_diary_info(user)
+
+        # c_names = ["month", "day", "film", "released", "rating", "like", "rewatch", "review", "edityou", "film_url"]  # , "img_url", "small_img_url"]
+
+        # for i in range(len(c_names)):
+        #     user_df.rename(columns={ user_df.columns[i]: c_names[i] }, inplace=True)
+
+    r = requests.get("http://127.0.0.1:8000/endpoint/hydrated_data/")
+    df = pd.DataFrame(json.loads(r.content))
+    user_df = df[df["name"] == user]
 
     # Sort by rating
-    user_df = user_df.sort_values("rating", ascending=False).drop_duplicates('film_url', keep="first")
+    user_df = user_df.sort_values("rating", ascending=False).drop_duplicates('film_link', keep="first")
 
     # Sort by rating
     # user_df = user_df.sort_values("rating", ascending=False)
@@ -31,8 +46,12 @@ def generate_topster(user):
 
     user_df = user_df.head(25)
 
-    user_df["img_url"] = user_df["film_url"].apply(lambda x: add_img(x))
-    user_df["small_img_url"] = user_df["film_url"].apply(lambda x: add_small_img(x))
+    # Terrible logic here
+    # New film_link references the user review page, so the username is appended at the start
+    # and if it's a re watch then there are "2/" ints appended at the end
+    # For now we just grab the middle of that string, but this film_link val should really be fixed in the future
+    user_df["img_url"] = user_df["film_link"].apply(lambda x: add_img("/".join(x.split("/")[2:4])))
+    user_df["small_img_url"] = user_df["film_link"].apply(lambda x: add_small_img("/".join(x.split("/")[2:4])))
 
     head_test = user_df
 
@@ -53,15 +72,75 @@ def generate_topster(user):
     new.save(f"./image_generation/static/media/{user}.png")
 
 
+def is_user_in_user_table(user: str) -> bool:
+    '''
+    Checks to see if a user is already contained within our user_table
+    '''
+    r = requests.get("http://127.0.0.1:8000/endpoint/user_table/")
+    df = pd.DataFrame(json.loads(r.content))
+    if user in df["name"].values:
+        return True
+    return False
+
+
+def post_user_into(user):
+    user_df = get_user_diary_info(user)
+
+    c_names = ["month", "day", "film", "released", "rating", "like", "rewatch", "review", "edityou", "film_url"]  # , "img_url", "small_img_url"]
+
+    for i in range(len(c_names)):
+        user_df.rename(columns={ user_df.columns[i]: c_names[i] }, inplace=True)
+
+    user_df.to_csv("expected.csv")
+    # explode tuple values into new cols:
+
+    user_df[["month", "month_none"]] = pd.DataFrame(user_df['month'].tolist(), index=user_df.index)
+    user_df[["day", "day_none"]] = pd.DataFrame(user_df['day'].tolist(), index=user_df.index)
+    user_df[["film", "film_link"]] = pd.DataFrame(user_df['film'].tolist(), index=user_df.index)
+    user_df[["released", "released_none"]] = pd.DataFrame(user_df['released'].tolist(), index=user_df.index)
+    user_df[["rating", "rating_none"]] = pd.DataFrame(user_df['rating'].tolist(), index=user_df.index)
+    user_df[["review", "review_link"]] = pd.DataFrame(user_df['review'].tolist(), index=user_df.index)
+
+    # Convert to dict for iterative processing.. TODO fix this
+    dict_df = user_df.to_dict('records')
+
+    for count, item in enumerate(dict_df):
+        if item["month"] == '':
+            item["month"] = dict_df[count-1]["month"]
+
+    dated_df = pd.DataFrame(dict_df)
+    dated_df[["month", "year"]] = dated_df['month'].str.split(' ', expand=True)
+
+    dated_df_dict = dated_df.to_dict('records')
+
+    # Issue posts
+    for item in dated_df_dict:
+        data = {
+        "name": user, 
+        "day": item["day"],
+        "month": item["month"],
+        "year": item["year"],
+        "film": item["film"],
+        "released": item["released"],
+        "rating":  item["rating"],
+        "review_link": item["review_link"],
+        "film_link" : item["film_link"]
+        }
+
+        r = requests.post("http://127.0.0.1:8000/endpoint/hydrated_data_post/", data=data)
+
+    return dated_df
+
+
 def add_img(x):
-    r = requests.get(x)
+    r = requests.get(f"https://letterboxd.com/{x}")
     soup = BeautifulSoup(r.content)
     img = soup.find("meta", property="og:image")
     return img["content"]
 
 def add_small_img(x):
     try:
-        r = requests.get(x)
+        r = requests.get(f"https://letterboxd.com/{x}")
         soup = BeautifulSoup(r.content)
         s = soup.find("script", attrs={"type": "application/ld+json"})
         split_str = s.string.split("/* <![CDATA[ */")[-1].split("/* ]]> */")[0]
@@ -115,5 +194,3 @@ def main_generate(user):
     if user:
         generate_topster(user)
     return
-
-# main("mamief")

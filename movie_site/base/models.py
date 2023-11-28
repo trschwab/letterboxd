@@ -11,3 +11,7 @@ class Item(models.Model):
     review_link = models.CharField(max_length=200)
     film_link = models.CharField(max_length=200)
     created = models.DateTimeField(auto_now_add=True)
+
+class Item2(models.Model):
+    name = models.CharField(max_length=200)
+    created = models.DateTimeField(auto_now_add=True)
