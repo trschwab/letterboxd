@@ -25,8 +25,8 @@ SECRET_KEY = 'django-insecure-ce*clv&q34x932avn_9fz@$00*a)*^hlw509h3r5@krpq@yq)!
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+# TODO - Fix.. I have a feeling having a host.docker.internal is not best practice..
+ALLOWED_HOSTS = ["host.docker.internal"]
 
 # Application definition
 
