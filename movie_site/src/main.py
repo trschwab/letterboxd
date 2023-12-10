@@ -12,6 +12,7 @@ BASE_URL = "https://letterboxd.com"
 def generate_topster(user):
     # Generate topster for user
 
+    # TODO
     if is_user_in_user_table(user):
         # We only want to fetch new values to update our hydrate for a given user
         # TODO
@@ -22,17 +23,32 @@ def generate_topster(user):
         # Let's get the data we just posted
 
 
-        # # We want to update our tables and ingest new data
-        # user_df = get_user_diary_info(user)
+    # # We want to update our tables and ingest new data
+    # user_df = get_user_diary_info(user)
 
-        # c_names = ["month", "day", "film", "released", "rating", "like", "rewatch", "review", "edityou", "film_url"]  # , "img_url", "small_img_url"]
+    # c_names = ["month", "day", "film", "released", "rating", "like", "rewatch", "review", "edityou", "film_url"]  # , "img_url", "small_img_url"]
 
-        # for i in range(len(c_names)):
-        #     user_df.rename(columns={ user_df.columns[i]: c_names[i] }, inplace=True)
+    # for i in range(len(c_names)):
+    #     user_df.rename(columns={ user_df.columns[i]: c_names[i] }, inplace=True)
 
+    # user_df["name"] = user
     r = requests.get("http://127.0.0.1:8000/endpoint/hydrated_data/")
     df = pd.DataFrame(json.loads(r.content))
     user_df = df[df["name"] == user]
+    print(user_df)
+    print(user_df.columns)
+    print(len(user_df))
+    movie_list = user_df["film_link"].unique()
+    print(movie_list)
+    for movie_link in movie_list:
+        movie_url = f"https://letterboxd.com/{'/'.join(movie_link.split('/')[2:4])}"
+        r = post_a_movie_info(movie_url)
+        print(r)
+
+    ###
+    ### This is where we want to update the movie table
+    ### post_a_movie_info(movie_url)
+    ###
 
     # Sort by rating
     user_df = user_df.sort_values("rating", ascending=False).drop_duplicates('film_link', keep="first")
@@ -190,7 +206,78 @@ def get_user_diary_info(a_user):
 
     return return_df
 
+
+### Need to redo imports 
+###
+
+def get_page(url):
+    s = requests.session()
+    r = s.get(url)
+    soup = BeautifulSoup(r.text, "html.parser")
+    return soup
+
+
+def get_a_movie_info(url: str) -> pd.DataFrame:
+    '''
+    Takes in a movie URL like "https://letterboxd.com/film/goon/"
+    return the Dataframe of the movie's info
+    '''
+    soup = get_page(url)
+    i = 0
+    begin = 0
+    end = 0
+    for item in str(soup).split('\n'):
+        if ("* <![CDATA[ */" in item):
+            begin = i
+        if ("/* ]]> */" in item):
+            end = i + 1
+        i += 1
+    info_list = [str(soup).split('\n')[begin:end], url]
+    movie_df = pd.json_normalize(json.loads(info_list[0][1]))
+    return movie_df
+
+
+def post_a_movie_info(url: str):
+    '''
+    actually posts movie info to our endpoint
+    '''
+    try:
+        df = get_a_movie_info(url)
+        post_df = df[["image", "director", "dateModified", "productionCompany", "releasedEvent", "url",
+                    "actors", "dateCreated", "name", "aggregateRating.reviewCount",
+                    "aggregateRating.ratingValue", "aggregateRating.ratingCount"]]
+        post_df = post_df.rename(columns={"aggregateRating.reviewCount": "reviewCount",
+                                        "aggregateRating.ratingValue": "ratingValue",
+                                        "aggregateRating.ratingCount": "ratingCount"})
+        # We don't want to post a movie that already exists in our endpoint
+        get_r = requests.get("http://127.0.0.1:8000/endpoint/movie_table/")
+        movie_table = pd.DataFrame(get_r.json())
+        post_data = post_df.to_dict('records')[0]
+        for k in post_data.keys():
+            post_name = post_data["name"]
+            post_date = post_data["dateCreated"]
+            match = len(movie_table[(movie_table["name"] == post_name) & (movie_table["dateCreated"] == post_date)])
+            if match > 0:
+                print("Do not post something already in our database")
+                return
+            post_data[k] = str(post_data[k])
+        r = requests.post("http://127.0.0.1:8000/endpoint/movie_table_post/", data=post_data)
+        print(r)
+        print(r.content)
+        return r
+    except Exception as e:
+        print("FAIL")
+        print(url)
+        print(e)
+        
+
+
 def main_generate(user):
     if user:
         generate_topster(user)
     return
+
+
+
+
+
