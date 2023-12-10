@@ -15,3 +15,18 @@ class Item(models.Model):
 class Item2(models.Model):
     name = models.CharField(max_length=200)
     created = models.DateTimeField(auto_now_add=True)
+
+class MovieInfo(models.Model):
+    image = models.TextField()
+    director = models.TextField()
+    dateModified = models.TextField()
+    productionCompany = models.TextField()
+    releasedEvent = models.TextField()
+    url = models.TextField()
+    actors = models.TextField()
+    dateCreated = models.TextField()
+    name = models.TextField()
+    reviewCount = models.TextField()
+    ratingValue = models.TextField()
+    ratingCount = models.TextField()
+    created = models.DateTimeField(auto_now_add=True)

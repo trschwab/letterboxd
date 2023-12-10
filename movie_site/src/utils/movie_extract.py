@@ -32,6 +32,26 @@ def get_a_movie_info(url: str) -> pd.DataFrame:
     return movie_df
 
 
+def post_a_movie_info(url: str):
+    '''
+    actually posts movie info to our endpoint
+    '''
+    df = get_a_movie_info(url)
+    post_df = df[["image", "director", "dateModified", "productionCompany", "releasedEvent", "url",
+                  "actors", "dateCreated", "name", "aggregateRating.reviewCount",
+                  "aggregateRating.ratingValue", "aggregateRating.ratingCount"]]
+    post_df = post_df.rename(columns={"aggregateRating.reviewCount": "reviewCount",
+                                      "aggregateRating.ratingValue": "ratingValue",
+                                      "aggregateRating.ratingCount": "ratingCount"})
+    post_data = post_df.to_dict('records')[0]
+    for k in post_data.keys():
+        post_data[k] = str(post_data[k])
+    r = requests.post("http://127.0.0.1:8000/endpoint/movie_table_post/", data=post_data)
+    print(r)
+    print(r.content)
+    return r
+
+
 # columns:
 # Index(['image', '@type', 'director', 'dateModified', 'productionCompany',
 #        'releasedEvent', '@context', 'url', 'actors', 'dateCreated', 'name',

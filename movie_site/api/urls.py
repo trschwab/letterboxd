@@ -6,4 +6,6 @@ urlpatterns = [
     path('hydrated_data_post/', views.addItem),
     path('user_table/', views.getData2),
     path('user_table_post/', views.addItem2),
+    path('movie_table/', views.getMovieInfo),
+    path('movie_table_post/', views.addMovieInfo),
 ]
