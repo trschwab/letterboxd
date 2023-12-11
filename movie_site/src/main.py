@@ -12,14 +12,57 @@ BASE_URL = "https://letterboxd.com"
 def generate_topster(user):
     # Generate topster for user
 
+    # Read in our hydrated data
+    r = requests.get("http://127.0.0.1:8000/endpoint/hydrated_data/")
+    df = pd.DataFrame(json.loads(r.content))
+
     # TODO
     if is_user_in_user_table(user):
-        # We only want to fetch new values to update our hydrate for a given user
-        # TODO
-        print("TODO")
+        # get full user data from lbox
+        full_user_data = get_user_data(user)
+        full_user_data = full_user_data[[
+            "name",
+            "day",
+            "month",
+            "year",
+            "film",
+            "released",
+            "rating",
+            "review_link",
+            "film_link"]]
+        # limit our db to that user
+        our_user_data = df[df["name"] == user]
+        our_user_data = our_user_data[[
+            "name",
+            "day",
+            "month",
+            "year",
+            "film",
+            "released",
+            "rating",
+            "review_link",
+            "film_link"]]
+
+        # we have to do this to find difference
+        # each time you watch a film a new film_link is generated
+        # covers instances when you can watch the same film on the same day with different ratings
+        # and reviews and details
+        difference = full_user_data[~(full_user_data["film_link"]).isin(our_user_data["film_link"].unique())]
+        post_user_into(difference)
     else:
+        full_user_data = get_user_data(user)
+        full_user_data = full_user_data[[
+            "name",
+            "day",
+            "month",
+            "year",
+            "film",
+            "released",
+            "rating",
+            "review_link",
+            "film_link"]]
         r = requests.post("http://127.0.0.1:8000/endpoint/user_table_post/", data={"name": user})
-        post_user_into(user)
+        post_user_into(full_user_data)
         # Let's get the data we just posted
 
 
@@ -32,8 +75,7 @@ def generate_topster(user):
     #     user_df.rename(columns={ user_df.columns[i]: c_names[i] }, inplace=True)
 
     # user_df["name"] = user
-    r = requests.get("http://127.0.0.1:8000/endpoint/hydrated_data/")
-    df = pd.DataFrame(json.loads(r.content))
+
     user_df = df[df["name"] == user]
     print(user_df)
     print(user_df.columns)
@@ -99,7 +141,10 @@ def is_user_in_user_table(user: str) -> bool:
     return False
 
 
-def post_user_into(user):
+def get_user_data(user: str) -> pd.DataFrame:
+    '''
+    Gets a df of user data ready to be posted to our model
+    '''
     user_df = get_user_diary_info(user)
 
     c_names = ["month", "day", "film", "released", "rating", "like", "rewatch", "review", "edityou", "film_url"]  # , "img_url", "small_img_url"]
@@ -107,7 +152,7 @@ def post_user_into(user):
     for i in range(len(c_names)):
         user_df.rename(columns={ user_df.columns[i]: c_names[i] }, inplace=True)
 
-    user_df.to_csv("expected.csv")
+    # user_df.to_csv("expected.csv")
     # explode tuple values into new cols:
 
     user_df[["month", "month_none"]] = pd.DataFrame(user_df['month'].tolist(), index=user_df.index)
@@ -127,25 +172,56 @@ def post_user_into(user):
     dated_df = pd.DataFrame(dict_df)
     dated_df[["month", "year"]] = dated_df['month'].str.split(' ', expand=True)
 
-    dated_df_dict = dated_df.to_dict('records')
+    dated_df["name"] = user
 
-    # Issue posts
-    for item in dated_df_dict:
-        data = {
-        "name": user, 
-        "day": item["day"],
-        "month": item["month"],
-        "year": item["year"],
-        "film": item["film"],
-        "released": item["released"],
-        "rating":  item["rating"],
-        "review_link": item["review_link"],
-        "film_link" : item["film_link"]
-        }
-
-        r = requests.post("http://127.0.0.1:8000/endpoint/hydrated_data_post/", data=data)
+    dated_df = dated_df[[
+        "name",
+        "day",
+        "month",
+        "year",
+        "film",
+        "released",
+        "rating",
+        "review_link",
+        "film_link"]]
 
     return dated_df
+
+
+def post_user_into(user_info):
+    print(user_info)
+    print(user_info.columns)
+    # dated_df = get_user_data(user)
+
+    user_info_dict = user_info.to_dict('records')
+
+    # # Issue posts
+    # for item in dated_df_dict:
+    #     data = {
+    #     "name": user, 
+    #     "day": item["day"],
+    #     "month": item["month"],
+    #     "year": item["year"],
+    #     "film": item["film"],
+    #     "released": item["released"],
+    #     "rating":  item["rating"],
+    #     "review_link": item["review_link"],
+    #     "film_link" : item["film_link"]
+    #     }
+
+
+    for item in user_info_dict:
+        for key in item.keys():
+            # We need to make sure all our data types abide by what the serializer expects
+            # So if a user does not post a review and that field is None, it cannot be a nonetype
+            item[key] = str(item[key])
+        print("ATTEMPT TO POST:")
+        print(item)
+        r = requests.post("http://127.0.0.1:8000/endpoint/hydrated_data_post/", data=item)
+        print(item["film"])
+        print(r)
+
+    return 
 
 
 def add_img(x):
@@ -179,6 +255,7 @@ def get_user_diary_info(a_user):
 
     # TOOD need to be able to handle users that do not exist
     '''
+    print(a_user)
     df_list = []
     # Get diary URL
     diary_url = get_diary(a_user)

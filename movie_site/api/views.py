@@ -13,7 +13,10 @@ def getData(request):
 def addItem(request):
     serializer = ItemSerializer(data=request.data)
     if serializer.is_valid():
+        print("valid data for serializer")
         serializer.save()
+    else:
+        print("invalid data for serializer")
     return Response(serializer.data)
 
 @api_view(['GET'])
