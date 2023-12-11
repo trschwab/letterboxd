@@ -101,7 +101,9 @@ def get_average_rating(df):
     return df["numeric_rating"].mean()
 
 
-def coordinator(user):
+def generate_stats_string(user):
+    return_string = ""
+
     get_r = requests.get("http://127.0.0.1:8000/endpoint/movie_table/")
     movie_table = pd.DataFrame(get_r.json())
 
@@ -111,28 +113,46 @@ def coordinator(user):
     user_info = hyd_table[hyd_table["name"] == user]
 
     movie_count = get_watch_per_year(user_info)
-    print(f"User watched {movie_count} movies in 2023")
+    print(f"User watched {movie_count} movies in 2023<br><br>")
+    return_string += f"User watched {movie_count} movies in 2023<br><br>"
 
     review_count = get_reviews_per_year(user_info)
-    print(f"User reviewed {review_count} of those movies in 2023")
+    print(f"User reviewed {review_count} of those movies in 2023<br><br>")
+    return_string += f"User reviewed {review_count} of those movies in 2023<br><br>"
 
     print(f"Only {review_count / movie_count * 100}% of movies watched in 2023 were reviewed")
 
     average_rating = get_average_rating(user_info)
     print(f"On average, you rated movies at {average_rating} in 2023, excluding the 0 star entries")
+    return_string += f"On average, you rated movies at {average_rating} in 2023, excluding the 0 star entries<br><br>"
 
     user_info["film_url"] = user_info.apply(lambda x: f"https://letterboxd.com/{'/'.join(x['film_link'].split('/')[2:4])}/", axis=1)
 
     join_info = pd.merge(user_info, movie_table, how="left", left_on="film_url", right_on="url")
 
     print("User top watched actors were the following:")
+    return_string += "User top watched actors were the following:<br><br>"
     print(get_actors(join_info))
+    return_string += str(get_actors(join_info))
+    return_string += "<br><br>"
 
     print("User top watched directors were the following: ")
+    return_string += "User top watched directors were the following: <br><br>"
     print(get_directors(join_info))
+    return_string += str(get_directors(join_info))
+    return_string += "<br><br>"
 
     print("User top watched production companies were the following: ")
+    return_string += "User top watched production companies were the following: "
     print(get_production_companies(join_info))
+    return_string += str(get_production_companies(join_info))
+    return_string += "<br><br>"
 
     print("User deviated from mainstream ratings: ")
+    return_string += "User deviated from mainstream ratings: "
     print(get_deviation(join_info))
+    return_string += str(get_deviation(join_info))
+    return_string += "<br><br>"
+    return return_string
+
+

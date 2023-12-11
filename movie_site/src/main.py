@@ -63,6 +63,8 @@ def generate_topster(user):
             "film_link"]]
         r = requests.post("http://127.0.0.1:8000/endpoint/user_table_post/", data={"name": user})
         post_user_into(full_user_data)
+        r = requests.get("http://127.0.0.1:8000/endpoint/hydrated_data/")
+        df = pd.DataFrame(json.loads(r.content))
         # Let's get the data we just posted
 
 
@@ -318,6 +320,7 @@ def post_a_movie_info(url: str):
     '''
     actually posts movie info to our endpoint
     '''
+    # TODO we need to check if movies exist in our movie_table before doing any of this logic
     try:
         df = get_a_movie_info(url)
         post_df = df[["image", "director", "dateModified", "productionCompany", "releasedEvent", "url",
