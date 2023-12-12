@@ -14,7 +14,7 @@ def generate_topster(user):
     # Generate topster for user
 
     # Read in our hydrated data
-    r = requests.get("http://127.0.0.1:8000/endpoint/hydrated_data/")
+    r = requests.get("http://127.0.0.1:8000/endpoint/hydrated_data/", auth=('username1', 'password1'))
     df = pd.DataFrame(json.loads(r.content))
     user_df = df[df["name"] == user]
 

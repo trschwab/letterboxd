@@ -10,7 +10,7 @@ def update_user(user: str):
     update their data if they're already 
     '''
     # Read in our hydrated data
-    r = requests.get("http://127.0.0.1:8000/endpoint/hydrated_data/")
+    r = requests.get("http://127.0.0.1:8000/endpoint/hydrated_data/", auth=('username1', 'password1'))
     df = pd.DataFrame(json.loads(r.content))
 
     if is_user_in_user_table(user):
@@ -57,7 +57,7 @@ def update_user(user: str):
             "rating",
             "review_link",
             "film_link"]]
-        r = requests.post("http://127.0.0.1:8000/endpoint/user_table_post/", data={"name": user})
+        r = requests.post("http://127.0.0.1:8000/endpoint/user_table_post/", data={"name": user}, auth=('username1', 'password1'))
         post_user_into(full_user_data)
     user_df = df[df["name"] == user]
     print(user_df)

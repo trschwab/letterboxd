@@ -104,10 +104,10 @@ def get_average_rating(df):
 def generate_stats_string(user):
     return_string = ""
 
-    get_r = requests.get("http://127.0.0.1:8000/endpoint/movie_table/")
+    get_r = requests.get("http://127.0.0.1:8000/endpoint/movie_table/", auth=('username1', 'password1'))
     movie_table = pd.DataFrame(get_r.json())
 
-    get_r = requests.get("http://127.0.0.1:8000/endpoint/hydrated_data/")
+    get_r = requests.get("http://127.0.0.1:8000/endpoint/hydrated_data/", auth=('username1', 'password1'))
     hyd_table = pd.DataFrame(get_r.json())
 
     user_info = hyd_table[hyd_table["name"] == user]

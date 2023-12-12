@@ -11,7 +11,7 @@ def is_user_in_user_table(user: str) -> bool:
     '''
     Checks to see if a user is already contained within our user_table
     '''
-    r = requests.get("http://127.0.0.1:8000/endpoint/user_table/")
+    r = requests.get("http://127.0.0.1:8000/endpoint/user_table/", auth=('username1', 'password1'))
     df = pd.DataFrame(json.loads(r.content))
     if user in df["name"].values:
         return True
@@ -94,7 +94,7 @@ def post_user_into(user_info):
             item[key] = str(item[key])
         print("ATTEMPT TO POST:")
         print(item)
-        r = requests.post("http://127.0.0.1:8000/endpoint/hydrated_data_post/", data=item)
+        r = requests.post("http://127.0.0.1:8000/endpoint/hydrated_data_post/", data=item, auth=('username1', 'password1'))
         print(item["film"])
         print(r)
 
@@ -109,7 +109,7 @@ def post_a_movie_info(url: str):
     # TODO this takes way too long to check on a per URL basis
     # TODO We need to switch to a join so that we immediately know exactly which
     # TODO records we need to insert and can do that in a bulk action
-    get_r = requests.get("http://127.0.0.1:8000/endpoint/movie_table/")
+    get_r = requests.get("http://127.0.0.1:8000/endpoint/movie_table/", auth=('username1', 'password1'))
     movie_table = pd.DataFrame(get_r.json())
     # Maybe we want to hand this a url with a backslash already on the end? Something to think about
     if f"{url}/" in movie_table["url"].unique():
@@ -133,7 +133,7 @@ def post_a_movie_info(url: str):
             #     print("Do not post something already in our database")
             #     return
             post_data[k] = str(post_data[k])
-        r = requests.post("http://127.0.0.1:8000/endpoint/movie_table_post/", data=post_data)
+        r = requests.post("http://127.0.0.1:8000/endpoint/movie_table_post/", data=post_data, auth=('username1', 'password1'))
         print(r)
         print(r.content)
         return r
