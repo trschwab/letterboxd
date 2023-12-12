@@ -8,19 +8,34 @@
     Please read below for more details
 </p>
 
+<!-- Until we can improve efficiency in drastic ways, it is very important going forward to
+isolate actions, between generating our topster, statistics, or updating a user
+we should not be doing all 3 for every form submission -->
+
 <form action="/your-name.html" method="post">
     {% csrf_token %}
-    <label for="receive_key">Your name: </label>
+    <label for="receive_key">Generate Topster for Username: </label>
     <input id="receive_key" type="text" name="receive_key-name" value="{{ current_name }}">
+    <input type="submit" value="OK">
+</form>
+
+<form action="/your-update.html" method="post">
+    {% csrf_token %}
+    <label for="receive_key_update">Update Database for Username: </label>
+    <input id="receive_key_update" type="text" name="receive_key-update" value="{{ current_update }}">
+    <input type="submit" value="OK">
+</form>
+
+<form action="/your-stats.html" method="post">
+    {% csrf_token %}
+    <label for="receive_key_stats">Get Stats for Username: </label>
+    <input id="receive_key_stats" type="text" name="receive_key-stats" value="{{ current_stats }}">
     <input type="submit" value="OK">
 </form>
 
 <br><br><br>
 <p>
     This site is a personal project.<br><br>
-    More work has been committed on furthering the efficiency and variability of this site<br>
-    But unfortunately it is not production ready.<br>
-    This is the most minimal I can envision for this site.<br>
-    So minimal, in fact, that it is not equipped to handle requests from multiple people.<br><br>
-    This will change, hopefully, in the near future.<br><br>
+    More work is being committed on furthering the efficiency and variability of this site<br>
+    This will be implemented, hopefully, in the near future.<br><br>
 </p>

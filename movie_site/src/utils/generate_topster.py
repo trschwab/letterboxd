@@ -6,21 +6,26 @@ from PIL import Image, ImageEnhance
 import urllib.request
 from io import BytesIO
 import numpy as np
+import os
 
 BASE_URL = "https://letterboxd.com"
 
 def generate_topster(user):
     # Generate topster for user
 
-    user_df = get_user_diary_info(user)
+    # Read in our hydrated data
+    r = requests.get("http://127.0.0.1:8000/endpoint/hydrated_data/")
+    df = pd.DataFrame(json.loads(r.content))
+    user_df = df[df["name"] == user]
 
-    c_names = ["month", "day", "film", "released", "rating", "like", "rewatch", "review", "edityou", "film_url"]  # , "img_url", "small_img_url"]
 
-    for i in range(len(c_names)):
-        user_df.rename(columns={ user_df.columns[i]: c_names[i] }, inplace=True)
+    ###
+    ### This is where we want to update the movie table
+    ### post_a_movie_info(movie_url)
+    ###
 
     # Sort by rating
-    user_df = user_df.sort_values("rating", ascending=False).drop_duplicates('film_url', keep="first")
+    user_df = user_df.sort_values("rating", ascending=False).drop_duplicates('film_link', keep="first")
 
     # Sort by rating
     # user_df = user_df.sort_values("rating", ascending=False)
@@ -31,8 +36,12 @@ def generate_topster(user):
 
     user_df = user_df.head(25)
 
-    user_df["img_url"] = user_df["film_url"].apply(lambda x: add_img(x))
-    user_df["small_img_url"] = user_df["film_url"].apply(lambda x: add_small_img(x))
+    # Terrible logic here
+    # New film_link references the user review page, so the username is appended at the start
+    # and if it's a re watch then there are "2/" ints appended at the end
+    # For now we just grab the middle of that string, but this film_link val should really be fixed in the future
+    user_df["img_url"] = user_df["film_link"].apply(lambda x: add_img("/".join(x.split("/")[2:4])))
+    user_df["small_img_url"] = user_df["film_link"].apply(lambda x: add_small_img("/".join(x.split("/")[2:4])))
 
     head_test = user_df
 
@@ -50,18 +59,17 @@ def generate_topster(user):
                 new.paste(img, (col * 230, row * 345))
             except Exception as e:
                 print(e)
-    new.save(f"{user}.png")
-
+    new.save(f"./image_generation/static/media/{user}.png")
 
 def add_img(x):
-    r = requests.get(x)
+    r = requests.get(f"https://letterboxd.com/{x}")
     soup = BeautifulSoup(r.content)
     img = soup.find("meta", property="og:image")
     return img["content"]
 
 def add_small_img(x):
     try:
-        r = requests.get(x)
+        r = requests.get(f"https://letterboxd.com/{x}")
         soup = BeautifulSoup(r.content)
         s = soup.find("script", attrs={"type": "application/ld+json"})
         split_str = s.string.split("/* <![CDATA[ */")[-1].split("/* ]]> */")[0]
@@ -110,3 +118,17 @@ def get_user_diary_info(a_user):
     return_df["film_url"] = return_df[('Film', None)].apply(lambda x: gen_film_url(x))
 
     return return_df
+
+
+def main_generate(user, assert_generation=False):
+    # We want to check to see if a topster already exists.
+    # If this gets called and assert_generation is True we will generate an image
+    if assert_generation == False:
+        if os.path.isfile(f"./image_generation/static/media/{user}.png"):
+            return
+    if user:
+        # We need to ensure there is data to generate topster here
+        # If for example, we hit a user that is not in our database here an empty PNG gets generated
+        print("GENERATE TOPSTER")
+        generate_topster(user)
+    return
