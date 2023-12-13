@@ -11,10 +11,14 @@ def is_user_in_user_table(user: str) -> bool:
     '''
     Checks to see if a user is already contained within our user_table
     '''
-    r = requests.get("http://127.0.0.1:8000/endpoint/user_table/", auth=('username1', 'password1'))
-    df = pd.DataFrame(json.loads(r.content))
-    if user in df["name"].values:
-        return True
+    try:
+        r = requests.get("http://127.0.0.1:8000/endpoint/user_table/", auth=('username1', 'password1'))
+        df = pd.DataFrame(json.loads(r.content))
+        if user in df["name"].values:
+            return True
+    except Exception as e:
+        logging.info("Table probably empty")
+        logging.info(e)
     return False
 
 
@@ -112,9 +116,10 @@ def post_a_movie_info(url: str):
     get_r = requests.get("http://127.0.0.1:8000/endpoint/movie_table/", auth=('username1', 'password1'))
     movie_table = pd.DataFrame(get_r.json())
     # Maybe we want to hand this a url with a backslash already on the end? Something to think about
-    if f"{url}/" in movie_table["url"].unique():
-        logging.info("Cannot insert duplicate %s into movie table", url)
-        return
+    if len(movie_table) > 0:
+        if f"{url}/" in movie_table["url"].unique():
+            logging.info("Cannot insert duplicate %s into movie table", url)
+            return
     try:
         df = get_a_movie_info(url)
         post_df = df[["image", "director", "dateModified", "productionCompany", "releasedEvent", "url",

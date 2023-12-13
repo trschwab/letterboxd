@@ -33,8 +33,12 @@ def generate_topster(user):
     # delete duplicates
     # user_df.drop_duplicates(subset='film', keep="last", inplace=True)
 
-
+    # We want to use the top 25 rated movies, but we need to remove duplicate movies that have the same rating
+    user_df = user_df.drop_duplicates(["film_link", "rating"])
     user_df = user_df.head(25)
+    # if we want variability for our topster, we'd want to shuffle it by groups
+    # That imnplementation would probably be answered here
+    # https://stackoverflow.com/questions/45585860/shuffle-a-pandas-dataframe-by-groups
 
     # Terrible logic here
     # New film_link references the user review page, so the username is appended at the start

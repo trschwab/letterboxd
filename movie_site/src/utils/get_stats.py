@@ -3,8 +3,6 @@ import ast
 import pandas as pd
 import requests
 
-# Deviations? I want to see when a rating of a user varied from a rating of movie by more than 3 points
-
 def get_deviation(joined_table):
     joined_table = joined_table[joined_table["year"] == "2023"]
     mapping = {'×': 0,
@@ -36,7 +34,7 @@ def get_production_companies(joined_table):
             print("director likely NA type")
     df = pd.DataFrame.from_dict(production_set)
     actor_stats = df.groupby(["name"]).size().reset_index(name='counts')
-    top_10 = actor_stats.sort_values("counts", ascending=False).head(10)
+    top_10 = actor_stats.sort_values("counts", ascending=False).head(5)
     return top_10
 
 
@@ -55,7 +53,7 @@ def get_actors(joined_table):
     # print(actor_set)
     df = pd.DataFrame.from_dict(actor_set)
     actor_stats = df.groupby(["name"]).size().reset_index(name='counts')
-    top_10 = actor_stats.sort_values("counts", ascending=False).head(10)
+    top_10 = actor_stats.sort_values("counts", ascending=False).head(5)
     return top_10
 
 
@@ -73,7 +71,7 @@ def get_directors(joined_table):
             print("director likely NA type")
     df = pd.DataFrame.from_dict(director_set)
     actor_stats = df.groupby(["name"]).size().reset_index(name='counts')
-    top_10 = actor_stats.sort_values("counts", ascending=False).head(10)
+    top_10 = actor_stats.sort_values("counts", ascending=False).head(5)
     return top_10
 
 
@@ -90,12 +88,18 @@ def get_reviews_per_year(df):
 def get_average_rating(df):
     df = df[df["year"] == "2023"]
     mapping = {'×': 0,
-               "× ★★★★½": 9,
+               '0': 0,
+               '× ½': 1,
+               '× ★': 2,
+               '× ★½': 3,
+               '× ★★': 4,
                "× ★★½": 5,
-               "× ★★★★": 8,
                "× ★★★": 6,
-               "× ★★★½": 7
-               }
+               "× ★★★½": 7,
+               "× ★★★★": 8,
+               "× ★★★★½": 9,
+               '× ★★★★★': 10
+    }
     df['numeric_rating'] = df.rating.map(mapping)
     df = df[df["numeric_rating"] != 0]
     return df["numeric_rating"].mean()
@@ -105,10 +109,10 @@ def generate_stats_string(user):
     return_string = ""
 
     get_r = requests.get("http://127.0.0.1:8000/endpoint/movie_table/", auth=('username1', 'password1'))
-    movie_table = pd.DataFrame(get_r.json())
+    movie_table = pd.DataFrame(get_r.json()).fillna("")
 
     get_r = requests.get("http://127.0.0.1:8000/endpoint/hydrated_data/", auth=('username1', 'password1'))
-    hyd_table = pd.DataFrame(get_r.json())
+    hyd_table = pd.DataFrame(get_r.json()).fillna("")
 
     user_info = hyd_table[hyd_table["name"] == user]
 
@@ -123,36 +127,56 @@ def generate_stats_string(user):
     print(f"Only {review_count / movie_count * 100}% of movies watched in 2023 were reviewed")
 
     average_rating = get_average_rating(user_info)
+    average_rating = average_rating // 0.01 / 100 # int divide to get 2 decimal points
     print(f"On average, you rated movies at {average_rating} in 2023, excluding the 0 star entries")
     return_string += f"On average, you rated movies at {average_rating} in 2023, excluding the 0 star entries<br><br>"
 
-    user_info["film_url"] = user_info.apply(lambda x: f"https://letterboxd.com/{'/'.join(x['film_link'].split('/')[2:4])}/", axis=1)
+    try:
+        user_info = user_info.dropna()
+        user_info["film_url"] = user_info.apply(lambda x: f"https://letterboxd.com/{'/'.join(x['film_link'].split('/')[2:4])}/" if x['film_link'] != '' else '', axis=1)
 
-    join_info = pd.merge(user_info, movie_table, how="left", left_on="film_url", right_on="url")
+        join_info = pd.merge(user_info, movie_table, how="left", left_on="film_url", right_on="url")
+    except Exception as e:
+        print("ERROR HERE")
+        print(e)
 
     print("User top watched actors were the following:")
     return_string += "User top watched actors were the following:<br><br>"
-    print(get_actors(join_info))
-    return_string += str(get_actors(join_info))
+    actor_df = get_actors(join_info)
+    actor_dict = actor_df.to_dict('records')
+    for actor in actor_dict:
+        print(f"{actor['name']}: {actor['counts']}")
+        return_string += f"{actor['name']}: {actor['counts']}<br>"
     return_string += "<br><br>"
 
     print("User top watched directors were the following: ")
     return_string += "User top watched directors were the following: <br><br>"
-    print(get_directors(join_info))
-    return_string += str(get_directors(join_info))
+    director_df = get_directors(join_info)
+    director_dict = director_df.to_dict('records')
+    for director in director_dict:
+        print(f"{director['name']}: {director['counts']}")
+        return_string += f"{director['name']}: {director['counts']}<br>"
     return_string += "<br><br>"
 
     print("User top watched production companies were the following: ")
-    return_string += "User top watched production companies were the following: "
-    print(get_production_companies(join_info))
-    return_string += str(get_production_companies(join_info))
+    return_string += "User top watched production companies were the following: <br><br>"
+    prod_df = get_production_companies(join_info)
+    prod_dict = prod_df.to_dict('records')
+    for prod in prod_dict:
+        print(f"{prod['name']}: {prod['counts']}")
+        return_string += f"{prod['name']}: {prod['counts']}<br>"
     return_string += "<br><br>"
 
-    print("User deviated from mainstream ratings: ")
-    return_string += "User deviated from mainstream ratings: "
-    print(get_deviation(join_info))
-    return_string += str(get_deviation(join_info))
+    print("Your deviated from mainstream ratings by greater than 2 and a half stars: ")
+    return_string += "You deviated from mainstream ratings by greater than 2 and a half stars: <br><br>"
+    deviation_df = get_deviation(join_info)
+    deviation_dict = deviation_df.to_dict('records')
+    for deviation in deviation_dict:
+        print(f"{deviation['film']}: You rated {deviation['numeric_rating']} deviating by {deviation['deviation'] // .01 / 100} from the average of {deviation['ratingValue']*2}")
+        return_string += f"{deviation['film']}: You rated {deviation['numeric_rating']} deviating by {deviation['deviation'] // .01 / 100} from the average of {deviation['ratingValue']*2}<br><br>"
     return_string += "<br><br>"
+
+    # return return_string
     return return_string
 
 

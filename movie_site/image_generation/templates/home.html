@@ -1,30 +1,63 @@
+{% load static %}
+
+<link rel="stylesheet" href="{% static 'css/style.css' %}">
+
 <h1>
-    Home Page
+    Letterboxd Stats
 </h1>
+<body>
 
+<div style="width:800px; margin:0 auto;">
+<br><br><br><br><br><br>
 <p>
-    Enter your username for your Letterboxd Topster
-    <br><br>
-    Please read below for more details
+    If you're new, or you want to update the info we have on your profile
+    <br>
+    please enter your username to be updated below. If you just want to see
+    <br>
+    the stats we currently have on you, use the inputs below!
 </p>
-
-<!-- Until we can improve efficiency in drastic ways, it is very important going forward to
-isolate actions, between generating our topster, statistics, or updating a user
-we should not be doing all 3 for every form submission -->
-
-<form action="/your-name.html" method="post">
-    {% csrf_token %}
-    <label for="receive_key">Generate Topster for Username: </label>
-    <input id="receive_key" type="text" name="receive_key-name" value="{{ current_name }}">
-    <input type="submit" value="OK">
-</form>
-
 <form action="/your-update.html" method="post">
     {% csrf_token %}
     <label for="receive_key_update">Update Database for Username: </label>
     <input id="receive_key_update" type="text" name="receive_key-update" value="{{ current_update }}">
     <input type="submit" value="OK">
 </form>
+<p>
+    Depending on how many movies you've logged this might take some time.
+    <br>
+    Feel free to close the tab while we look at your profile and come back
+    <br>
+    in 5 or 10 minutes to try the functionality below
+</p>
+<br><br><br>
+
+<!-- Until we can improve efficiency in drastic ways, it is very important going forward to
+isolate actions, between generating our topster, statistics, or updating a user
+we should not be doing all 3 for every form submission -->
+<p>
+    A "topster" is a collection of cover art. Type in a username to see the topster 
+    <br>
+    we have for it. If we don't have any info on the user, we'll generate it on the spot
+    <br>
+    which might take some time. Feel free to wait around for that to populate or close the tab. 
+    <br>
+    Once a topster is generated, we don't create a new one until the user is updated using 
+    <br>
+    the input above this.
+</p>
+
+<form action="/your-topster.html" method="post">
+    {% csrf_token %}
+    <label for="receive_key">Generate Topster for Username: </label>
+    <input id="receive_key" type="text" name="receive_key-name" value="{{ current_name }}">
+    <input type="submit" value="OK">
+</form>
+<br><br><br>
+<p>
+    If you just want plain old statistics, those can be generated below.
+    <br>
+</p>
+
 
 <form action="/your-stats.html" method="post">
     {% csrf_token %}
@@ -33,9 +66,15 @@ we should not be doing all 3 for every form submission -->
     <input type="submit" value="OK">
 </form>
 
-<br><br><br>
+
+</div>
+<div style="float: left;
+margin-left: 20px;">
 <p>
-    This site is a personal project.<br><br>
-    More work is being committed on furthering the efficiency and variability of this site<br>
+    <h2>This site is a personal project.</h2>
+    <br><br>
+    More work is being committed on furthering the efficiency and variability of this site<br><br>
     This will be implemented, hopefully, in the near future.<br><br>
 </p>
+</div>
+</body>

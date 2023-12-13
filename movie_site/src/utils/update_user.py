@@ -3,15 +3,20 @@ import pandas as pd
 import json
 from .utils import is_user_in_user_table, get_user_data, post_user_into, post_a_movie_info
 from .generate_topster import main_generate
+import logging
 
 def update_user(user: str):
     '''
     Given a user we should create their data if they're new to the system or
     update their data if they're already 
     '''
-    # Read in our hydrated data
-    r = requests.get("http://127.0.0.1:8000/endpoint/hydrated_data/", auth=('username1', 'password1'))
-    df = pd.DataFrame(json.loads(r.content))
+    try:
+        # Read in our hydrated data
+        r = requests.get("http://127.0.0.1:8000/endpoint/hydrated_data/", auth=('username1', 'password1'))
+        df = pd.DataFrame(json.loads(r.content))
+    except Exception as e:
+        logging.info("Table probably empty")
+        logging.info(e)
 
     if is_user_in_user_table(user):
         # get full user data from lbox
@@ -73,4 +78,17 @@ def update_user(user: str):
     # Generate a topster for our user:
     main_generate(user, True)
 
-    return 
+    return
+
+
+def is_valid_username(username):
+    '''
+    Checks to see if a username exists with letterboxd
+    '''
+    url = f"https://letterboxd.com/{username}/"
+    r = requests.get(url)
+    if r.status_code == 200:
+        logging.info("Valid username supplied")
+        return True
+    logging.info("Invalid username supplied")
+    return False
