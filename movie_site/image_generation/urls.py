@@ -7,4 +7,5 @@ urlpatterns = [
     path('your-stats.html', views.your_stats, name="your-stats"),
     path('your-update.html', views.your_update, name="your-update"),
     path('error.html', views.error, name="error"),
+    path('about.html', views.about, name="about"),
 ]

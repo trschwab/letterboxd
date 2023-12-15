@@ -15,6 +15,14 @@ def home(request):
         logging.info(e)
         return render(request, f"error.html", {})
 
+def about(request):
+    try:
+        return render(request, "about.html", {})
+    except Exception as e:
+        logging.info(e)
+        return render(request, f"error.html", {})
+
+
 def your_stats(request):
     try:
         filename = request.POST['receive_key-stats']
