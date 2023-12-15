@@ -105,47 +105,39 @@ def post_user_into(user_info):
     return
 
 
-def post_a_movie_info(url: str):
+def post_df_movie_info(df):
     '''
-    actually posts movie info to our endpoint
+    movie_url
     '''
-    # We don't want to post a movie that already exists in our endpoint
-    # TODO this takes way too long to check on a per URL basis
-    # TODO We need to switch to a join so that we immediately know exactly which
-    # TODO records we need to insert and can do that in a bulk action
     get_r = requests.get("http://127.0.0.1:8000/endpoint/movie_table/", auth=('username1', 'password1'))
     movie_table = pd.DataFrame(get_r.json())
-    # Maybe we want to hand this a url with a backslash already on the end? Something to think about
-    if len(movie_table) > 0:
-        if f"{url}/" in movie_table["url"].unique():
-            logging.info("Cannot insert duplicate %s into movie table", url)
-            return
-    try:
-        df = get_a_movie_info(url)
-        post_df = df[["image", "director", "dateModified", "productionCompany", "releasedEvent", "url",
-                    "actors", "dateCreated", "name", "aggregateRating.reviewCount",
-                    "aggregateRating.ratingValue", "aggregateRating.ratingCount"]]
-        post_df = post_df.rename(columns={"aggregateRating.reviewCount": "reviewCount",
-                                        "aggregateRating.ratingValue": "ratingValue",
-                                        "aggregateRating.ratingCount": "ratingCount"})
-        
-        post_data = post_df.to_dict('records')[0]
-        for k in post_data.keys():
-            # post_name = post_data["name"]
-            # post_date = post_data["dateCreated"]
-            # match = len(movie_table[(movie_table["name"] == post_name) & (movie_table["dateCreated"] == post_date)])
-            # if match > 0:
-            #     print("Do not post something already in our database")
-            #     return
-            post_data[k] = str(post_data[k])
-        r = requests.post("http://127.0.0.1:8000/endpoint/movie_table_post/", data=post_data, auth=('username1', 'password1'))
-        print(r)
-        print(r.content)
-        return r
-    except Exception as e:
-        print("FAIL")
-        print(url)
-        print(e)
+    if len(movie_table) == 0:
+        return
+    df["movie_url"] = df["movie_url"] + '/'
+    dfe = pd.merge(df, movie_table, left_on='movie_url', right_on="url", how='left', indicator=True)
+    dfe[dfe['_merge'] == 'left_only']
+
+    diff = dfe['movie_url'].unique()
+    for movie in diff:
+        try:
+            df = get_a_movie_info(movie)
+            post_df = df[["image", "director", "dateModified", "productionCompany", "releasedEvent", "url",
+                        "actors", "dateCreated", "name", "aggregateRating.reviewCount",
+                        "aggregateRating.ratingValue", "aggregateRating.ratingCount"]]
+            post_df = post_df.rename(columns={"aggregateRating.reviewCount": "reviewCount",
+                                            "aggregateRating.ratingValue": "ratingValue",
+                                            "aggregateRating.ratingCount": "ratingCount"})
+            post_data = post_df.to_dict('records')[0]
+            for k in post_data.keys():
+                post_data[k] = str(post_data[k])
+            r = requests.post("http://127.0.0.1:8000/endpoint/movie_table_post/", data=post_data, auth=('username1', 'password1'))
+            logging.info(r)
+            logging.info(r.content)
+        except Exception as e:
+            logging.info("FAIL")
+            logging.info(movie)
+            logging.info(e)
+
 
 def get_user_diary_info(a_user):
     '''
@@ -214,3 +206,16 @@ def get_page(url):
     r = s.get(url)
     soup = BeautifulSoup(r.text, "html.parser")
     return soup
+
+
+def delete_movie_dupes():
+    '''
+    movie_table should not have duplicate records in it
+    '''
+    get_r = requests.get("http://127.0.0.1:8000/endpoint/movie_table/", auth=('username1', 'password1'))
+    movie_table = pd.DataFrame(get_r.json())
+    duplicate = movie_table[movie_table.duplicated('url')]
+    # TODO
+    # r = requests.post("http://127.0.0.1:8000/endpoint/movie_table/", data=item, auth=('username1', 'password1'))
+
+
