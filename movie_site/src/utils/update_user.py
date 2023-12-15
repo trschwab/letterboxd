@@ -1,7 +1,7 @@
 import requests
 import pandas as pd
 import json
-from .utils import is_user_in_user_table, get_user_data, post_user_into, post_df_movie_info
+from .utils import is_user_in_user_table, get_user_data, post_user_into, post_df_movie_info, delete_movie_dupes
 from .generate_topster import main_generate
 import logging
 
@@ -14,9 +14,11 @@ def update_user(user: str):
         # Read in our hydrated data
         r = requests.get("http://127.0.0.1:8000/endpoint/hydrated_data/", auth=('username1', 'password1'))
         df = pd.DataFrame(json.loads(r.content))
+        delete_movie_dupes()
     except Exception as e:
         logging.info("Table probably empty")
         logging.info(e)
+
 
     if is_user_in_user_table(user):
         # get full user data from lbox

@@ -72,24 +72,8 @@ def get_user_data(user: str) -> pd.DataFrame:
 def post_user_into(user_info):
     print(user_info)
     print(user_info.columns)
-    # dated_df = get_user_data(user)
 
     user_info_dict = user_info.to_dict('records')
-
-    # # Issue posts
-    # for item in dated_df_dict:
-    #     data = {
-    #     "name": user, 
-    #     "day": item["day"],
-    #     "month": item["month"],
-    #     "year": item["year"],
-    #     "film": item["film"],
-    #     "released": item["released"],
-    #     "rating":  item["rating"],
-    #     "review_link": item["review_link"],
-    #     "film_link" : item["film_link"]
-    #     }
-
 
     for item in user_info_dict:
         for key in item.keys():
@@ -115,11 +99,12 @@ def post_df_movie_info(df):
         return
     df["movie_url"] = df["movie_url"] + '/'
     dfe = pd.merge(df, movie_table, left_on='movie_url', right_on="url", how='left', indicator=True)
-    dfe[dfe['_merge'] == 'left_only']
+    dfe = dfe[dfe['_merge'] == 'left_only']
 
     diff = dfe['movie_url'].unique()
     for movie in diff:
         try:
+            print(f"Posting to movie table: {movie}")
             df = get_a_movie_info(movie)
             post_df = df[["image", "director", "dateModified", "productionCompany", "releasedEvent", "url",
                         "actors", "dateCreated", "name", "aggregateRating.reviewCount",
@@ -215,7 +200,10 @@ def delete_movie_dupes():
     get_r = requests.get("http://127.0.0.1:8000/endpoint/movie_table/", auth=('username1', 'password1'))
     movie_table = pd.DataFrame(get_r.json())
     duplicate = movie_table[movie_table.duplicated('url')]
-    # TODO
-    # r = requests.post("http://127.0.0.1:8000/endpoint/movie_table/", data=item, auth=('username1', 'password1'))
+    id_set = duplicate["id"].unique()
+    for id in id_set:
+        r = requests.delete("http://127.0.0.1:8000/endpoint/movie_table/", data={"id": id}, auth=('username1', 'password1'))
+        print(r)
+        print(r.content)
 
 
