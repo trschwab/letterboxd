@@ -7,6 +7,7 @@ import urllib.request
 from io import BytesIO
 import numpy as np
 import os
+from config import ROOT
 
 BASE_URL = "https://letterboxd.com"
 
@@ -14,7 +15,7 @@ def generate_topster(user):
     # Generate topster for user
 
     # Read in our hydrated data
-    r = requests.get("http://127.0.0.1:8000/endpoint/hydrated_data/", auth=('username1', 'password1'))
+    r = requests.get(f"{ROOT}endpoint/hydrated_data/", auth=('username1', 'password1'))
     df = pd.DataFrame(json.loads(r.content))
     user_df = df[df["name"] == user]
 

@@ -3,6 +3,7 @@ import json
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
+from config import ROOT
 
 
 def get_page(url):
@@ -46,7 +47,7 @@ def post_a_movie_info(url: str):
     post_data = post_df.to_dict('records')[0]
     for k in post_data.keys():
         post_data[k] = str(post_data[k])
-    r = requests.post("http://127.0.0.1:8000/endpoint/movie_table_post/", data=post_data, auth=('username1', 'password1'))
+    r = requests.post(f"{ROOT}endpoint/movie_table_post/", data=post_data, auth=('username1', 'password1'))
     print(r)
     print(r.content)
     return r

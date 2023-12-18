@@ -2,6 +2,8 @@ import ast
 
 import pandas as pd
 import requests
+from config import ROOT
+
 
 def get_deviation(joined_table):
     joined_table = joined_table[joined_table["year"] == "2023"]
@@ -108,10 +110,10 @@ def get_average_rating(df):
 def generate_stats_string(user):
     return_string = ""
 
-    get_r = requests.get("http://127.0.0.1:8000/endpoint/movie_table/", auth=('username1', 'password1'))
+    get_r = requests.get(f"{ROOT}endpoint/movie_table/", auth=('username1', 'password1'))
     movie_table = pd.DataFrame(get_r.json()).fillna("")
 
-    get_r = requests.get("http://127.0.0.1:8000/endpoint/hydrated_data/", auth=('username1', 'password1'))
+    get_r = requests.get(f"{ROOT}endpoint/hydrated_data/", auth=('username1', 'password1'))
     hyd_table = pd.DataFrame(get_r.json()).fillna("")
 
     user_info = hyd_table[hyd_table["name"] == user]

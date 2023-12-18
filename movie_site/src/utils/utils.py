@@ -3,6 +3,7 @@ import json
 import pandas as pd
 import logging
 from bs4 import BeautifulSoup
+from .config import ROOT
 
 BASE_URL = "https://letterboxd.com"
 
@@ -12,7 +13,7 @@ def is_user_in_user_table(user: str) -> bool:
     Checks to see if a user is already contained within our user_table
     '''
     try:
-        r = requests.get("http://127.0.0.1:8000/endpoint/user_table/", auth=('username1', 'password1'))
+        r = requests.get(f"{ROOT}endpoint/user_table/", auth=('username1', 'password1'))
         df = pd.DataFrame(json.loads(r.content))
         if user in df["name"].values:
             return True
@@ -82,7 +83,7 @@ def post_user_into(user_info):
             item[key] = str(item[key])
         print("ATTEMPT TO POST:")
         print(item)
-        r = requests.post("http://127.0.0.1:8000/endpoint/hydrated_data_post/", data=item, auth=('username1', 'password1'))
+        r = requests.post(f"{ROOT}endpoint/hydrated_data_post/", data=item, auth=('username1', 'password1'))
         print(item["film"])
         print(r)
 
@@ -93,7 +94,7 @@ def post_df_movie_info(df):
     '''
     movie_url
     '''
-    get_r = requests.get("http://127.0.0.1:8000/endpoint/movie_table/", auth=('username1', 'password1'))
+    get_r = requests.get(f"{ROOT}endpoint/movie_table/", auth=('username1', 'password1'))
     movie_table = pd.DataFrame(get_r.json())
     if len(movie_table) == 0:
         return
@@ -115,7 +116,7 @@ def post_df_movie_info(df):
             post_data = post_df.to_dict('records')[0]
             for k in post_data.keys():
                 post_data[k] = str(post_data[k])
-            r = requests.post("http://127.0.0.1:8000/endpoint/movie_table_post/", data=post_data, auth=('username1', 'password1'))
+            r = requests.post(f"{ROOT}endpoint/movie_table_post/", data=post_data, auth=('username1', 'password1'))
             logging.info(r)
             logging.info(r.content)
         except Exception as e:
@@ -197,12 +198,12 @@ def delete_movie_dupes():
     '''
     movie_table should not have duplicate records in it
     '''
-    get_r = requests.get("http://127.0.0.1:8000/endpoint/movie_table/", auth=('username1', 'password1'))
+    get_r = requests.get(f"{ROOT}endpoint/movie_table/", auth=('username1', 'password1'))
     movie_table = pd.DataFrame(get_r.json())
     duplicate = movie_table[movie_table.duplicated('url')]
     id_set = duplicate["id"].unique()
     for id in id_set:
-        r = requests.delete("http://127.0.0.1:8000/endpoint/movie_table/", data={"id": id}, auth=('username1', 'password1'))
+        r = requests.delete(f"{ROOT}endpoint/movie_table/", data={"id": id}, auth=('username1', 'password1'))
         print(r)
         print(r.content)
 
