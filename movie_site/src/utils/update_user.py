@@ -4,6 +4,7 @@ import json
 from .utils import is_user_in_user_table, get_user_data, post_user_into, post_df_movie_info, delete_movie_dupes
 from .generate_topster import main_generate
 import logging
+from .config import ROOT
 
 def update_user(user: str):
     '''
@@ -12,7 +13,7 @@ def update_user(user: str):
     '''
     try:
         # Read in our hydrated data
-        r = requests.get("http://127.0.0.1:8000/endpoint/hydrated_data/", auth=('username1', 'password1'))
+        r = requests.get(f"{ROOT}endpoint/hydrated_data/", auth=('username1', 'password1'))
         df = pd.DataFrame(json.loads(r.content))
         delete_movie_dupes()
     except Exception as e:
@@ -64,7 +65,7 @@ def update_user(user: str):
             "rating",
             "review_link",
             "film_link"]]
-        r = requests.post("http://127.0.0.1:8000/endpoint/user_table_post/", data={"name": user}, auth=('username1', 'password1'))
+        r = requests.post(f"{ROOT}endpoint/user_table_post/", data={"name": user}, auth=('username1', 'password1'))
         post_user_into(full_user_data)
     user_df = df[df["name"] == user]
     print(user_df)

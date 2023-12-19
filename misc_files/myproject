@@ -1,0 +1,12 @@
+server {
+	listen 80;
+	server_name 64.176.215.87;
+	
+location /static/ {
+	root /home/django/static/;
+}
+
+location / {
+	proxy_pass http://64.176.215.87:8000;
+    }
+}

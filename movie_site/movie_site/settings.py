@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-ce*clv&q34x932avn_9fz@$00*a)*^hlw509h3r5@krpq@yq)!
 DEBUG = True
 
 # TODO - Fix.. I have a feeling having a host.docker.internal is not best practice..
-ALLOWED_HOSTS = ["host.docker.internal", "127.0.0.1"]
+ALLOWED_HOSTS = ["host.docker.internal", "127.0.0.1", "64.176.215.87"]
 
 # Application definition
 
