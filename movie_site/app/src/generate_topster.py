@@ -13,6 +13,7 @@ BASE_URL = "https://letterboxd.com"
 
 def generate_topster(user):
     # Generate topster for user
+    user = user.lower()
 
     # Read in our hydrated data
     r = requests.get(f"{ROOT}endpoint/hydrated_data/", auth=('username1', 'password1'))

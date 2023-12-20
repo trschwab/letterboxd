@@ -1,16 +1,17 @@
 import requests
 import pandas as pd
 import json
-from .utils import is_user_in_user_table, get_user_data, post_user_into, post_df_movie_info, delete_movie_dupes
-from .generate_topster import main_generate
+from utils.utils import is_user_in_user_table, get_user_data, post_user_into, post_df_movie_info, delete_movie_dupes
+from generate_topster import main_generate
 import logging
-from .config import ROOT
+from utils.config import ROOT
 
 def update_user(user: str):
     '''
     Given a user we should create their data if they're new to the system or
     update their data if they're already 
     '''
+    user = user.lower()
     try:
         # Read in our hydrated data
         r = requests.get(f"{ROOT}endpoint/hydrated_data/", auth=('username1', 'password1'))

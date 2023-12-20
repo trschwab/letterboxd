@@ -1,1 +1,8 @@
 This is the code pertaining to a project involving data from Letterboxd
+
+
+This was a very helpful video in some of my set up:
+
+
+Definitely want to include it in my eventual technical documentation
+I think the only thing it missed for me was a UFW 80 sudo command to open up port 80?

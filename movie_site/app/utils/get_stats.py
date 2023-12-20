@@ -108,6 +108,8 @@ def get_average_rating(df):
 
 
 def generate_stats_string(user):
+    user = user.lower()
+
     return_string = ""
 
     get_r = requests.get(f"{ROOT}endpoint/movie_table/", auth=('username1', 'password1'))
