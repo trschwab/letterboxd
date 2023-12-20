@@ -11,8 +11,8 @@ I think the only thing it missed for me was a UFW 80 sudo command to open up por
 
 Going to start listing out major todo items here because I keep losing the post-it notes:
 
-1. username input should not be case sensitive
-2. remove prints
+1. Done - username input should not be case sensitive
+2. Done - remove prints
 3. add logging
 4. figure out how to properly view and analyze logs
 5. implement CDN
@@ -41,7 +41,12 @@ Going to start listing out major todo items here because I keep losing the post-
 20. Rate limiting is a good idea, not for our admin user but just a general good practice.
 21. we need to fix our login web viewer, which currently fails to drop anywhere
     a. i.e. I need to be able to view in browser our data as a proper rest api
-22. 
+22. Make front end not horribly ugly.
+    I imagine we'll need to integrate React eventually
+23. Generally we just need to clean up code and ensure no function duplication
+24. I think there are some logical flows that may pull the same endpoint multiple times
+    they should only pull once
+
 
 
 

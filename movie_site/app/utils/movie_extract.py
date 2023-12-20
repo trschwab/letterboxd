@@ -48,8 +48,6 @@ def post_a_movie_info(url: str):
     for k in post_data.keys():
         post_data[k] = str(post_data[k])
     r = requests.post(f"{ROOT}endpoint/movie_table_post/", data=post_data, auth=('username1', 'password1'))
-    print(r)
-    print(r.content)
     return r
 
 

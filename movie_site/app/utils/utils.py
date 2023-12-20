@@ -71,9 +71,6 @@ def get_user_data(user: str) -> pd.DataFrame:
 
 
 def post_user_into(user_info):
-    print(user_info)
-    print(user_info.columns)
-
     user_info_dict = user_info.to_dict('records')
 
     for item in user_info_dict:
@@ -81,11 +78,7 @@ def post_user_into(user_info):
             # We need to make sure all our data types abide by what the serializer expects
             # So if a user does not post a review and that field is None, it cannot be a nonetype
             item[key] = str(item[key])
-        print("ATTEMPT TO POST:")
-        print(item)
         r = requests.post(f"{ROOT}endpoint/hydrated_data_post/", data=item, auth=('username1', 'password1'))
-        print(item["film"])
-        print(r)
 
     return
 
@@ -105,7 +98,7 @@ def post_df_movie_info(df):
     diff = dfe['movie_url'].unique()
     for movie in diff:
         try:
-            print(f"Posting to movie table: {movie}")
+            logging.info(f"Posting to movie table: {movie}")
             df = get_a_movie_info(movie)
             post_df = df[["image", "director", "dateModified", "productionCompany", "releasedEvent", "url",
                         "actors", "dateCreated", "name", "aggregateRating.reviewCount",
@@ -131,13 +124,10 @@ def get_user_diary_info(a_user):
 
     # TOOD need to be able to handle users that do not exist
     '''
-    print(a_user)
     df_list = []
     # Get diary URL
     diary_url = get_diary(a_user)
-    print(diary_url)
     while diary_url:
-        # print(diary_url)
         r = requests.get(diary_url)
         soup = BeautifulSoup(r.content)
 
@@ -204,7 +194,7 @@ def delete_movie_dupes():
     id_set = duplicate["id"].unique()
     for id in id_set:
         r = requests.delete(f"{ROOT}endpoint/movie_table/", data={"id": id}, auth=('username1', 'password1'))
-        print(r)
-        print(r.content)
+        logging.info(r)
+        logging.info(r.content)
 
 

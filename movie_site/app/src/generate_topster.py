@@ -8,13 +8,12 @@ from io import BytesIO
 import numpy as np
 import os
 from config import ROOT
+import logging
 
 BASE_URL = "https://letterboxd.com"
 
 def generate_topster(user):
     # Generate topster for user
-    user = user.lower()
-
     # Read in our hydrated data
     r = requests.get(f"{ROOT}endpoint/hydrated_data/", auth=('username1', 'password1'))
     df = pd.DataFrame(json.loads(r.content))
@@ -64,7 +63,7 @@ def generate_topster(user):
                 img = img.resize((230,345))
                 new.paste(img, (col * 230, row * 345))
             except Exception as e:
-                print(e)
+                logging.info(e)
     new.save(f"./image_generation/static/media/{user}.png")
 
 def add_img(x):
@@ -82,7 +81,7 @@ def add_small_img(x):
         info = json.loads(split_str)
         return info["image"]
     except Exception as e:
-        print(e)
+        logging.info(e)
         return None
 
 def gen_film_url(a_str):
@@ -101,9 +100,7 @@ def get_user_diary_info(a_user):
     df_list = []
     # Get diary URL
     diary_url = get_diary(a_user)
-    print(diary_url)
     while diary_url:
-        # print(diary_url)
         r = requests.get(diary_url)
         soup = BeautifulSoup(r.content)
 
@@ -135,6 +132,5 @@ def main_generate(user, assert_generation=False):
     if user:
         # We need to ensure there is data to generate topster here
         # If for example, we hit a user that is not in our database here an empty PNG gets generated
-        print("GENERATE TOPSTER")
         generate_topster(user)
     return

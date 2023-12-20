@@ -11,7 +11,6 @@ def update_user(user: str):
     Given a user we should create their data if they're new to the system or
     update their data if they're already 
     '''
-    user = user.lower()
     try:
         # Read in our hydrated data
         r = requests.get(f"{ROOT}endpoint/hydrated_data/", auth=('username1', 'password1'))
@@ -69,20 +68,12 @@ def update_user(user: str):
         r = requests.post(f"{ROOT}endpoint/user_table_post/", data={"name": user}, auth=('username1', 'password1'))
         post_user_into(full_user_data)
     user_df = df[df["name"] == user]
-    print(user_df)
-    print(user_df.columns)
-    print(len(user_df))
     movie_list = user_df["film_link"].unique()
-    print(movie_list)
     for count, movie_link in enumerate(movie_list):
         movie_url = f"https://letterboxd.com/{'/'.join(movie_link.split('/')[2:4])}"
         movie_list[count] = movie_url
-        # r = post_a_movie_info(movie_url)
-        # print(r)
     movie_list_df = pd.DataFrame(movie_list, columns =['movie_url'])
-    print(movie_list_df)
     r = post_df_movie_info(movie_list_df)
-    print(r)
     # Generate a topster for our user:
     main_generate(user, True)
 
