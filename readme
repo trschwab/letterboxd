@@ -3,6 +3,46 @@ This is the code pertaining to a project involving data from Letterboxd
 
 This was a very helpful video in some of my set up:
 
-
+https://www.youtube.com/watch?v=YnrgBeIRtvo
 Definitely want to include it in my eventual technical documentation
 I think the only thing it missed for me was a UFW 80 sudo command to open up port 80?
+
+
+
+Going to start listing out major todo items here because I keep losing the post-it notes:
+
+1. username input should not be case sensitive
+2. remove prints
+3. add logging
+4. figure out how to properly view and analyze logs
+5. implement CDN
+    Or some other way to increase speed. Maybe more resources?
+6. we can store images of the top rated and most popular movies so those do not have to be fetched for topster gen
+7. debug mode should be determined in the config
+8. create a waiting page that auto directs once code completes
+9. Need to figure out how to run via gunicorn and not `python manage.py runserver`
+    Issue here is static files
+10. Monitoring should track whether or not the site is up or down
+11. IP Needs to be tied to our domain name
+12. We need to get an https cert
+    that's port 443 ont 80, so maybe another ufw command?
+13. We should pre seed data, can take serveral forms
+    a. when idle we can update users that haven't been updated recently on our end
+    b. when idle we can also try to get user info of friends of our current user set
+        i. how far down this tree can we descend?
+14. When updating a user, we only need new user info. It should be a diary page by page basis,
+    comparing dates to what we have in our system
+15. We need to dockerize our python code
+16. We need to set up our github container repository
+17. We need to use a secrets manager, hashicorp likely
+18. We need to delete our test user once 17 is complete and remake a truly secure user
+    whose info is not username1 and password1
+19. Share on twitter button for topster
+20. Rate limiting is a good idea, not for our admin user but just a general good practice.
+21. we need to fix our login web viewer, which currently fails to drop anywhere
+    a. i.e. I need to be able to view in browser our data as a proper rest api
+22. 
+
+
+
+
