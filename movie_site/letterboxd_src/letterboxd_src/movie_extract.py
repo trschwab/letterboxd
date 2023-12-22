@@ -3,7 +3,7 @@ import json
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
-from utils.config import ROOT
+from .utils.config import ROOT
 
 
 def get_page(url):

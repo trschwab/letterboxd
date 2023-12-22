@@ -1,10 +1,10 @@
 import requests
 import pandas as pd
 import json
-from utils.utils import is_user_in_user_table, get_user_data, post_user_into, post_df_movie_info, delete_movie_dupes
+from .utils.utils import is_user_in_user_table, get_user_data, post_user_into, post_df_movie_info, delete_movie_dupes
 from generate_topster import main_generate
 import logging
-from utils.config import ROOT
+from .utils.config import ROOT
 
 def update_user(user: str):
     '''

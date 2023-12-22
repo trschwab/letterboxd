@@ -1,8 +1,7 @@
 from django.shortcuts import render
-# from src.main import main_generate
-from src.utils.get_stats import generate_stats_string
-from src.src.update_user import update_user, is_valid_username
-from src.src.generate_topster import main_generate
+from letterboxd_src.letterboxd_src.get_stats import generate_stats_string
+from letterboxd_src.letterboxd_src.update_user import update_user, is_valid_username
+from letterboxd_src.letterboxd_src.generate_topster import main_generate
 import time
 import asyncio
 from multiprocessing import Process

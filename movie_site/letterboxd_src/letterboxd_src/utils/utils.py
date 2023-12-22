@@ -3,7 +3,7 @@ import json
 import pandas as pd
 import logging
 from bs4 import BeautifulSoup
-from utils.config import ROOT, BASE_URL
+from .config import ROOT, BASE_URL
 
 
 def is_user_in_user_table(user: str) -> bool:
@@ -194,5 +194,3 @@ def delete_movie_dupes():
         r = requests.delete(f"{ROOT}endpoint/movie_table/", data={"id": id}, auth=('username1', 'password1'))
         logging.info(r)
         logging.info(r.content)
-
-

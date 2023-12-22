@@ -8,7 +8,7 @@ from io import BytesIO
 import numpy as np
 import os
 import logging
-from utils.config import ROOT, BASE_URL
+from .utils.config import ROOT, BASE_URL
 
 def generate_topster(user):
     # Generate topster for user
@@ -16,12 +16,6 @@ def generate_topster(user):
     r = requests.get(f"{ROOT}endpoint/hydrated_data/", auth=('username1', 'password1'))
     df = pd.DataFrame(json.loads(r.content))
     user_df = df[df["name"] == user]
-
-
-    ###
-    ### This is where we want to update the movie table
-    ### post_a_movie_info(movie_url)
-    ###
 
     # Sort by rating
     user_df = user_df.sort_values("rating", ascending=False).drop_duplicates('film_link', keep="first")
