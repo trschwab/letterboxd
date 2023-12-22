@@ -3,9 +3,7 @@ import json
 import pandas as pd
 import logging
 from bs4 import BeautifulSoup
-from config import ROOT
-
-BASE_URL = "https://letterboxd.com"
+from utils.config import ROOT, BASE_URL
 
 
 def is_user_in_user_table(user: str) -> bool:

@@ -3,7 +3,7 @@ import json
 import pandas as pd
 import requests
 from bs4 import BeautifulSoup
-from config import ROOT
+from utils.config import ROOT
 
 
 def get_page(url):
@@ -49,13 +49,3 @@ def post_a_movie_info(url: str):
         post_data[k] = str(post_data[k])
     r = requests.post(f"{ROOT}endpoint/movie_table_post/", data=post_data, auth=('username1', 'password1'))
     return r
-
-
-# columns:
-# Index(['image', '@type', 'director', 'dateModified', 'productionCompany',
-#        'releasedEvent', '@context', 'url', 'actors', 'dateCreated', 'name',
-#        'genre', '@id', 'countryOfOrigin', 'aggregateRating.bestRating',
-#        'aggregateRating.reviewCount', 'aggregateRating.@type',
-#        'aggregateRating.ratingValue', 'aggregateRating.description',
-#        'aggregateRating.ratingCount', 'aggregateRating.worstRating'],
-#       dtype='object')

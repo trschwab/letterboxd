@@ -2,7 +2,7 @@ import ast
 
 import pandas as pd
 import requests
-from config import ROOT
+from utils.config import ROOT
 import logging
 
 

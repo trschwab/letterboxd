@@ -7,10 +7,8 @@ import urllib.request
 from io import BytesIO
 import numpy as np
 import os
-from config import ROOT
 import logging
-
-BASE_URL = "https://letterboxd.com"
+from utils.config import ROOT, BASE_URL
 
 def generate_topster(user):
     # Generate topster for user

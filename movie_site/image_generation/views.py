@@ -1,8 +1,8 @@
 from django.shortcuts import render
 # from src.main import main_generate
 from src.utils.get_stats import generate_stats_string
-from letterboxd.movie_site.src.update.update_user import update_user, is_valid_username
-from letterboxd.movie_site.src.app.generate_topster import main_generate
+from src.src.update_user import update_user, is_valid_username
+from src.src.generate_topster import main_generate
 import time
 import asyncio
 from multiprocessing import Process
@@ -26,7 +26,7 @@ def about(request):
 def your_stats(request):
     try:
         filename = request.POST['receive_key-stats'].lower()
-        print(filename)
+        logging.info("Stats view calls username: %s", filename)
         stats = generate_stats_string(filename)
         f = open(f'image_generation/templates/your-stats.html', "w") 
         f.write(f'''
@@ -52,8 +52,8 @@ def your_stats(request):
 def your_topster(request):
     try:
         filename = request.POST['receive_key-name'].lower()
+        logging.info("Topster view calls username: %s", filename)
         x = main_generate(filename)
-        print(x)
         f = open(f'image_generation/templates/your-topster.html', "w") 
         f.write(f'''
     {{% load static %}}
@@ -77,8 +77,9 @@ def your_topster(request):
 async def your_update(request):
     try:
         filename = request.POST['receive_key-update'].lower()
+        logging.info("Topster view calls username: %s", filename)
         if is_valid_username(filename) == False:
-            logging.info(e)
+            logging.info("Invalid username %s has been called via update function", filename)
             return render(request, f"error.html", {})
         p = Process(target=update_user, args=(filename,))
         p.start()
